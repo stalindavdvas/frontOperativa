@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Método Gran M</h1>
+    <h1>Método de la Gran M</h1>
 
     <!-- Configuración inicial -->
     <div class="configuracion">
@@ -45,7 +45,7 @@
       </div>
 
       <!-- Botón Resolver -->
-      <button @click="resolverSimplex">Resolver</button>
+      <button @click="resolverGranM">Resolver</button>
     </div>
 
     <!-- Resultado -->
@@ -53,7 +53,7 @@
       <h2>Resultado</h2>
       <p><strong>Solución Óptima:</strong> {{ resultado.solucion }}</p>
       <p><strong>Valor Óptimo:</strong> {{ resultado.valor_optimo }}</p>
-      <p><strong>Iteraciones:</strong> {{ resultado.iteraciones }}</p>
+      <p><strong>Estado:</strong> {{ resultado.status }}</p>
     </div>
   </div>
 </template>
@@ -82,23 +82,28 @@ export default {
       this.mostrarFormulario = true;
     },
     async resolverGranM() {
+      console.log("Iniciando resolución de Gran M...");
+
       const data = {
         funcion_objetivo: [...this.funcionObjetivo],
         restricciones_coeficientes: this.restricciones.map(r => [...r.coeficientes]),
         restricciones_valores: this.restricciones.map(r => r.valor),
       };
 
+      console.log("Datos enviados al backend:", data);
+
       try {
         const response = await axios.post("http://localhost:5000/gran_m", data);
+        console.log("Respuesta del backend:", response.data);
         this.resultado = response.data;
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error en la petición:", error);
+        alert("Error al resolver el problema. Verifica la consola.");
       }
     },
   },
 };
 </script>
-
 
 <style scoped>
 /* Estilos generales */
