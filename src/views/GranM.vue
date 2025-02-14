@@ -1,22 +1,17 @@
 <template>
   <div>
     <h1>Método Gran M</h1>
-
     <!-- Configuración inicial -->
     <div class="configuracion">
       <label for="num-variables">Número de Variables:</label>
       <input type="number" id="num-variables" v-model.number="numVariables" min="1" />
-
       <label for="num-restricciones">Número de Restricciones:</label>
       <input type="number" id="num-restricciones" v-model.number="numRestricciones" min="1" />
-
       <button @click="generarInputs">Aceptar</button>
     </div>
-
     <!-- Formulario dinámico -->
     <div v-if="mostrarFormulario" class="formulario">
       <h2>Ingresar Datos</h2>
-
       <!-- Función Objetivo -->
       <div class="seccion">
         <h3>Función Objetivo</h3>
@@ -29,7 +24,6 @@
           </span>
         </div>
       </div>
-
       <!-- Restricciones -->
       <div class="seccion">
         <h3>Restricciones</h3>
@@ -47,36 +41,37 @@
           <input type="number" v-model.number="restricciones[rIndex].valor" />
         </div>
       </div>
-
       <!-- Botón Resolver -->
       <button @click="resolverGranM">Resolver</button>
     </div>
-
     <!-- Resultado -->
     <div v-if="resultado" class="resultado">
-      <h2>Resultado</h2>
+      <h2>Resultado Final</h2>
       <p><strong>Solución Óptima:</strong> {{ resultado.solucion }}</p>
       <p><strong>Valor Óptimo:</strong> {{ resultado.valor_optimo }}</p>
 
-      <!-- Mostrar tablas de iteraciones -->
+      <!-- Mostrar iteraciones -->
       <div v-if="iteraciones.length">
         <h2>Iteraciones del Método Gran M</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Restricción</th>
-              <th>Multiplicador Simplex</th>
-              <th>Slack</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(iter, index) in iteraciones" :key="'iter-' + index">
-              <td>{{ iter[0] }}</td>
-              <td>{{ iter[1] }}</td>
-              <td>{{ iter[2] }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div v-for="(iteracion, index) in iteraciones" :key="'iter-' + index" class="iteracion">
+          <h3>Iteración {{ index + 1 }}</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Variable Básica</th>
+                <th v-for="(varName, idx) in iteracion.variables" :key="'var-' + idx">{{ varName }}</th>
+                <th>Solución</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(fila, fIndex) in iteracion.tabla" :key="'fila-' + fIndex">
+                <td>{{ iteracion.bases[fIndex] }}</td>
+                <td v-for="(valor, vIndex) in fila" :key="'val-' + vIndex">{{ valor.toFixed(2) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p><strong>Valor de Z:</strong> {{ iteracion.valor_z.toFixed(2) }}</p>
+        </div>
       </div>
     </div>
   </div>
@@ -100,23 +95,24 @@ export default {
   methods: {
     generarInputs() {
       this.funcionObjetivo = Array(this.numVariables).fill(0);
-      this.restricciones = Array(this.numRestricciones).fill(null).map(() => ({
-        coeficientes: Array(this.numVariables).fill(0),
-        signo: "<=",
-        valor: 0,
-      }));
+      this.restricciones = Array(this.numRestricciones)
+        .fill(null)
+        .map(() => ({
+          coeficientes: Array(this.numVariables).fill(0),
+          signo: "<=",
+          valor: 0,
+        }));
       this.mostrarFormulario = true;
     },
     async resolverGranM() {
       const data = {
         funcion_objetivo: Array.from(this.funcionObjetivo),
-        restricciones: this.restricciones.map(r => ({
+        restricciones: this.restricciones.map((r) => ({
           coeficientes: Array.from(r.coeficientes),
           signo: r.signo,
           valor: r.valor,
         })),
       };
-
       try {
         const response = await axios.post("http://localhost:5000/gran_m", data);
         this.resultado = response.data;
@@ -130,7 +126,6 @@ export default {
 };
 </script>
 
-
 <style scoped>
 /* Estilos generales */
 .configuracion,
@@ -138,24 +133,20 @@ export default {
 .resultado {
   margin-bottom: 20px;
 }
-
 .seccion {
   margin-bottom: 15px;
 }
-
 .ecuacion {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
 }
-
 .ecuacion input,
 .ecuacion select {
   margin-right: 5px;
   padding: 5px;
   width: 60px;
 }
-
 button {
   padding: 10px 15px;
   background-color: #007bff;
@@ -163,8 +154,24 @@ button {
   border: none;
   cursor: pointer;
 }
-
 button:hover {
   background-color: #0056b3;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+table th,
+table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+table th {
+  background-color: #f4f4f4;
+}
+.iteracion {
+  margin-bottom: 20px;
 }
 </style>
