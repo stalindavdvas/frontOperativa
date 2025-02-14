@@ -57,7 +57,27 @@
       <h2>Resultado</h2>
       <p><strong>Solución Óptima:</strong> {{ resultado.solucion }}</p>
       <p><strong>Valor Óptimo:</strong> {{ resultado.valor_optimo }}</p>
-      <p><strong>Iteraciones:</strong> {{ resultado.iteraciones }}</p>
+
+      <!-- Mostrar tablas de iteraciones -->
+      <div v-if="iteraciones.length">
+        <h2>Iteraciones del Método Gran M</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Restricción</th>
+              <th>Multiplicador Simplex</th>
+              <th>Slack</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(iter, index) in iteraciones" :key="'iter-' + index">
+              <td>{{ iter[0] }}</td>
+              <td>{{ iter[1] }}</td>
+              <td>{{ iter[2] }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>
@@ -74,6 +94,7 @@ export default {
       restricciones: [],
       mostrarFormulario: false,
       resultado: null,
+      iteraciones: [],
     };
   },
   methods: {
@@ -96,12 +117,10 @@ export default {
         })),
       };
 
-      console.log("Datos enviados:", data);
-
       try {
         const response = await axios.post("http://localhost:5000/gran_m", data);
         this.resultado = response.data;
-        console.log("Respuesta del backend:", this.resultado);
+        this.iteraciones = response.data.iteraciones;
       } catch (error) {
         console.error("Error al resolver el Método de la Gran M:", error);
         alert("Ocurrió un error al resolver el problema.");
@@ -110,6 +129,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 /* Estilos generales */
