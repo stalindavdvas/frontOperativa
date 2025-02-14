@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Método de la Gran M</h1>
+    <h1>Método Gran M</h1>
 
     <!-- Configuración inicial -->
     <div class="configuracion">
@@ -39,7 +39,11 @@
             X{{ vIndex + 1 }}
             <span v-if="vIndex < restriccion.coeficientes.length - 1">+</span>
           </span>
-          &nbsp;<=&nbsp;
+          <select v-model="restricciones[rIndex].signo">
+            <option value="<=">≤</option>
+            <option value=">=">≥</option>
+            <option value="=">=</option>
+          </select>
           <input type="number" v-model.number="restricciones[rIndex].valor" />
         </div>
       </div>
@@ -49,18 +53,12 @@
     </div>
 
     <!-- Resultado -->
-<div v-if="resultado" class="resultado">
-  <h2>Resultado</h2>
-  <p><strong>Solución Óptima:</strong></p>
-  <ul>
-    <li v-for="(valor, variable) in resultado.solucion" :key="variable">
-      {{ variable }} = {{ valor }}
-    </li>
-  </ul>
-  <p><strong>Valor Óptimo:</strong> {{ resultado.valor_optimo }}</p>
-  <p><strong>Estado:</strong> {{ resultado.status }}</p>
-</div>
-
+    <div v-if="resultado" class="resultado">
+      <h2>Resultado</h2>
+      <p><strong>Solución Óptima:</strong> {{ resultado.solucion }}</p>
+      <p><strong>Valor Óptimo:</strong> {{ resultado.valor_optimo }}</p>
+      <p><strong>Iteraciones:</strong> {{ resultado.iteraciones }}</p>
+    </div>
   </div>
 </template>
 
@@ -83,28 +81,30 @@ export default {
       this.funcionObjetivo = Array(this.numVariables).fill(0);
       this.restricciones = Array(this.numRestricciones).fill(null).map(() => ({
         coeficientes: Array(this.numVariables).fill(0),
+        signo: "<=",
         valor: 0,
       }));
       this.mostrarFormulario = true;
     },
     async resolverGranM() {
-      console.log("Iniciando resolución de Gran M...");
-
       const data = {
-        funcion_objetivo: [...this.funcionObjetivo],
-        restricciones_coeficientes: this.restricciones.map(r => [...r.coeficientes]),
-        restricciones_valores: this.restricciones.map(r => r.valor),
+        funcion_objetivo: Array.from(this.funcionObjetivo),
+        restricciones: this.restricciones.map(r => ({
+          coeficientes: Array.from(r.coeficientes),
+          signo: r.signo,
+          valor: r.valor,
+        })),
       };
 
-      console.log("Datos enviados al backend:", data);
+      console.log("Datos enviados:", data);
 
       try {
         const response = await axios.post("http://localhost:5000/gran_m", data);
-        console.log("Respuesta del backend:", response.data);
         this.resultado = response.data;
+        console.log("Respuesta del backend:", this.resultado);
       } catch (error) {
-        console.error("Error en la petición:", error);
-        alert("Error al resolver el problema. Verifica la consola.");
+        console.error("Error al resolver el Método de la Gran M:", error);
+        alert("Ocurrió un error al resolver el problema.");
       }
     },
   },
@@ -129,7 +129,8 @@ export default {
   margin-bottom: 10px;
 }
 
-.ecuacion input {
+.ecuacion input,
+.ecuacion select {
   margin-right: 5px;
   padding: 5px;
   width: 60px;
