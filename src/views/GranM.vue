@@ -49,12 +49,18 @@
     </div>
 
     <!-- Resultado -->
-    <div v-if="resultado" class="resultado">
-      <h2>Resultado</h2>
-      <p><strong>Solución Óptima:</strong> {{ resultado.solucion }}</p>
-      <p><strong>Valor Óptimo:</strong> {{ resultado.valor_optimo }}</p>
-      <p><strong>Estado:</strong> {{ resultado.status }}</p>
-    </div>
+<div v-if="resultado" class="resultado">
+  <h2>Resultado</h2>
+  <p><strong>Solución Óptima:</strong></p>
+  <ul>
+    <li v-for="(valor, variable) in resultado.solucion" :key="variable">
+      {{ variable }} = {{ valor }}
+    </li>
+  </ul>
+  <p><strong>Valor Óptimo:</strong> {{ resultado.valor_optimo }}</p>
+  <p><strong>Estado:</strong> {{ resultado.status }}</p>
+</div>
+
   </div>
 </template>
 
