@@ -6,10 +6,8 @@
     <div class="configuracion">
       <label for="num-variables">Número de Variables:</label>
       <input type="number" id="num-variables" v-model.number="numVariables" min="1" />
-
       <label for="num-restricciones">Número de Restricciones:</label>
       <input type="number" id="num-restricciones" v-model.number="numRestricciones" min="1" />
-
       <button @click="generarInputs">Aceptar</button>
     </div>
 
@@ -51,9 +49,34 @@
     <!-- Resultado -->
     <div v-if="resultado" class="resultado">
       <h2>Resultado</h2>
-      <p><strong>Solución Óptima:</strong> {{ resultado.solucion }}</p>
-      <p><strong>Valor Óptimo:</strong> {{ resultado.valor_optimo }}</p>
-      <p><strong>Iteraciones:</strong> {{ resultado.iteraciones }}</p>
+      <p><strong>Solución Óptima:</strong> {{ formatoSolucion(resultado.solucion) }}</p>
+      <p><strong>Valor Óptimo:</strong> {{ resultado.valor_optimo.toFixed(2) }}</p>
+
+      <h3>Iteraciones</h3>
+      <div v-for="(tabla, index) in resultado.iteraciones" :key="'iter-' + index">
+        <h4>Iteración {{ index + 1 }}</h4>
+        <table border="1" cellpadding="5">
+          <!-- Encabezado de columnas -->
+          <thead>
+            <tr>
+              <th>Base</th>
+              <th v-for="col in tabla.columnas" :key="'col-' + col">{{ col }}</th>
+            </tr>
+          </thead>
+          <!-- Filas de la tabla -->
+          <tbody>
+            <tr v-for="(fila, fIndex) in tabla.valores" :key="'fila-' + fIndex">
+              <td>{{ tabla.base[fIndex] }}</td>
+              <td v-for="(valor, vIndex) in fila" :key="'valor-' + vIndex">{{ valor.toFixed(2) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Mensaje de Error -->
+    <div v-if="error" class="error">
+      <p><strong>Error:</strong> {{ error }}</p>
     </div>
   </div>
 </template>
@@ -70,40 +93,48 @@ export default {
       restricciones: [],
       mostrarFormulario: false,
       resultado: null,
+      error: null,
     };
   },
   methods: {
     generarInputs() {
       this.funcionObjetivo = Array(this.numVariables).fill(0);
-      this.restricciones = Array(this.numRestricciones).fill(null).map(() => ({
-        coeficientes: Array(this.numVariables).fill(0),
-        valor: 0,
-      }));
+      this.restricciones = Array(this.numRestricciones)
+        .fill(null)
+        .map(() => ({
+          coeficientes: Array(this.numVariables).fill(0),
+          valor: 0,
+        }));
       this.mostrarFormulario = true;
     },
     async resolverSimplex() {
-  // Convertir los datos a arrays simples para evitar Proxies
-  const funcionObjetivo = Array.from(this.funcionObjetivo);
-  const restriccionesCoeficientes = this.restricciones.map(r => Array.from(r.coeficientes));
-  const restriccionesValores = Array.from(this.restricciones.map(r => r.valor));
+      this.error = null; // Limpiar errores previos
+      const funcionObjetivo = Array.from(this.funcionObjetivo);
+      const restriccionesCoeficientes = this.restricciones.map((r) =>
+        Array.from(r.coeficientes)
+      );
+      const restriccionesValores = Array.from(
+        this.restricciones.map((r) => r.valor)
+      );
 
-  const data = {
-    funcion_objetivo: funcionObjetivo,
-    restricciones_coeficientes: restriccionesCoeficientes,
-    restricciones_valores: restriccionesValores,
-  };
+      const data = {
+        funcion_objetivo: funcionObjetivo,
+        restricciones_coeficientes: restriccionesCoeficientes,
+        restricciones_valores: restriccionesValores,
+      };
 
-  console.log("Datos enviados:", data); // Verifica los datos en la consola
-
-  try {
-    const response = await axios.post("http://localhost:5000/simplex", data);
-    this.resultado = response.data;
-    console.log("Respuesta del backend:", this.resultado); // Verifica la respuesta
-  } catch (error) {
-    console.error("Error al resolver el Método Simplex:", error);
-    alert("Ocurrió un error al resolver el problema.");
-  }
-},
+      try {
+        const response = await axios.post("http://localhost:5000/simplex", data);
+        this.resultado = response.data;
+      } catch (error) {
+        this.error = error.response?.data?.error || "Ocurrió un error al resolver el problema.";
+      }
+    },
+    formatoSolucion(solucion) {
+      return Object.entries(solucion)
+        .map(([varName, value]) => `${varName} = ${value.toFixed(2)}`)
+        .join(", ");
+    },
   },
 };
 </script>
@@ -115,23 +146,19 @@ export default {
 .resultado {
   margin-bottom: 20px;
 }
-
 .seccion {
   margin-bottom: 15px;
 }
-
 .ecuacion {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
 }
-
 .ecuacion input {
   margin-right: 5px;
   padding: 5px;
   width: 60px;
 }
-
 button {
   padding: 10px 15px;
   background-color: #007bff;
@@ -139,8 +166,29 @@ button {
   border: none;
   cursor: pointer;
 }
-
 button:hover {
   background-color: #0056b3;
+}
+
+/* Estilos para tablas */
+table {
+  border-collapse: collapse;
+  margin-bottom: 15px;
+  width: 100%;
+}
+table th,
+table td {
+  padding: 8px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+table th {
+  background-color: #f4f4f4;
+}
+
+/* Estilos para errores */
+.error {
+  color: red;
+  font-weight: bold;
 }
 </style>
