@@ -67,23 +67,23 @@
       <div v-for="(tabla, index) in resultado.iteraciones" :key="'iter-' + index">
         <h4>Iteración {{ index + 1 }}</h4>
         <table border="1" cellpadding="5">
-          <!-- Encabezado de columnas -->
-          <thead>
-            <tr>
-              <th>Base</th>
-              <th v-for="col in tabla.columnas" :key="'col-' + col">{{ col }}</th>
-            </tr>
-          </thead>
-          <!-- Filas de la tabla -->
-          <tbody>
-            <tr v-for="(fila, fIndex) in tabla.valores" :key="'fila-' + fIndex">
-              <td>{{ tabla.base[fIndex] }}</td>
-              <td v-for="(valor, vIndex) in fila" :key="'valor-' + vIndex">
-                {{ valor === 'M' ? 'M' : valor.toFixed(2) }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+  <!-- Encabezado de columnas -->
+  <thead>
+    <tr>
+      <th>Base</th>
+      <th v-for="col in tabla.columnas" :key="'col-' + col">{{ col }}</th>
+    </tr>
+  </thead>
+  <!-- Filas de la tabla -->
+  <tbody>
+    <tr v-for="(fila, fIndex) in tabla.valores" :key="'fila-' + fIndex">
+      <td>{{ tabla.base[fIndex] }}</td>
+      <td v-for="(valor, vIndex) in fila" :key="'valor-' + vIndex">
+        {{ valor === 'M' ? 'M' : typeof valor === 'number' ? valor.toFixed(2) : valor }}
+      </td>
+    </tr>
+  </tbody>
+</table>
       </div>
     </div>
 
