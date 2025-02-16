@@ -115,7 +115,7 @@ export default {
         });
 
         // Enviar la red al backend
-        const response = await axios.post("http://localhost:5000/camino-mas-corto", {
+        const response = await axios.post(`${this.$backendUrl}/camino-mas-corto`, {
           nodos: nodosArray,
           aristas: aristasArray,
           inicio: inicio,

@@ -126,7 +126,7 @@ export default {
       };
 
       try {
-        const response = await axios.post("http://localhost:5000/esquina-noroeste", data);
+        const response = await axios.post(`${this.$backendUrl}/esquina-noroeste`, data);
         this.resultado = response.data;
       } catch (error) {
         this.error = error.response?.data?.error || "Ocurrió un error al resolver el problema.";

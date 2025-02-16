@@ -174,7 +174,7 @@ export default {
       console.log("Datos enviados al backend:", data); // Imprimir los datos enviados
 
       try {
-        const response = await axios.post("http://localhost:5000/vogel", data);
+        const response = await axios.post(`${this.$backendUrl}/vogel`, data);
         console.log("Respuesta del backend:", response.data); // Imprimir la respuesta completa
 
         // Validar que la respuesta tenga la estructura esperada
